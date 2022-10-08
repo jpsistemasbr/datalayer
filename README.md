@@ -7,10 +7,10 @@ para executar rotinas comuns como cadastrar, ler, editar e remover dados.
 
 ## About JPsistemasBR
 
-###### JPsistemasBR is a set of small and optimized PHP components for common tasks. Held by JP Sistemas BR and the UpInside team. With them you perform routine tasks with fewer lines, writing less and doing much more.
+###### JPsistemasBR is a set of small and optimized PHP components for common tasks. Held by JP Sistemas BR. With them you perform routine tasks with fewer lines, writing less and doing much more.
 
-JPsistemasBR é um conjunto de pequenos e otimizados componentes PHP para tarefas comuns. Mantido por JP Sistemas BR e a
-equipe UpInside. Com eles você executa tarefas rotineiras com poucas linhas, escrevendo menos e fazendo muito mais.
+JPsistemasBR é um conjunto de pequenos e otimizados componentes PHP para tarefas comuns. Mantido por JP Sistemas BR. 
+Com eles você executa tarefas rotineiras com poucas linhas, escrevendo menos e fazendo muito mais.
 
 ### Highlights
 
