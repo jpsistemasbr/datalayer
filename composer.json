@@ -1,0 +1,32 @@
+{
+    "name": "jpsistemasbr/datalayer",
+    "description": "Sistema para abstração de persistência de banco de dados com PDO PHP",
+    "keywords": [
+        "JpsistemasBR",
+        "Database",
+        "PDO",
+        "Save",
+        "Delete",
+        "Destroy",
+        "CRUD"
+    ],
+    "type": "library",
+    "version": "v1.0",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "José Paulo S. Silva",
+            "email": "jpsistemasbr@gmail.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": ">=8.0",
+        "ext-pdo": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Jpsisemasbr\\DataLayer\\": "src"
+        }
+    }
+}
