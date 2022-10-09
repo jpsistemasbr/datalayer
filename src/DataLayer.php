@@ -10,8 +10,8 @@ use stdClass;
  * Class DataLayer
  * @package JPsistemasBR\DataLayer
  */
-abstract class DataLayer
-{
+abstract class DataLayer {
+
     use CrudTrait;
 
     /** @var string $entity database table */
@@ -61,11 +61,11 @@ abstract class DataLayer
      * @param bool $timestamps
      */
     public function __construct(
-        string $entity,
-        array $required,
-        string $primary = 'id',
-        bool $timestamps = true,
-        array $database = null
+            string $entity,
+            array $required,
+            string $primary = 'id',
+            bool $timestamps = true,
+            array $database = null
     ) {
         $this->entity = $entity;
         $this->primary = $primary;
@@ -78,8 +78,7 @@ abstract class DataLayer
      * @param $name
      * @param $value
      */
-    public function __set($name, $value)
-    {
+    public function __set($name, $value) {
         if (empty($this->data)) {
             $this->data = new stdClass();
         }
@@ -91,8 +90,7 @@ abstract class DataLayer
      * @param $name
      * @return bool
      */
-    public function __isset($name)
-    {
+    public function __isset($name) {
         return isset($this->data->$name);
     }
 
@@ -100,8 +98,7 @@ abstract class DataLayer
      * @param $name
      * @return string|null
      */
-    public function __get($name)
-    {
+    public function __get($name) {
         $method = $this->toCamelCase($name);
         if (method_exists($this, $method)) {
             return $this->$method();
@@ -118,27 +115,23 @@ abstract class DataLayer
      * @param int $mode
      * @return array|null
      */
-    public function columns($mode = PDO::FETCH_OBJ): ?array
-    {
+    public function columns($mode = PDO::FETCH_OBJ): ?array {
         $stmt = Connect::getInstance($this->database)->prepare("DESCRIBE {$this->entity}");
         $stmt->execute($this->params);
         return $stmt->fetchAll($mode);
     }
 
-
     /**
      * @return object|null
      */
-    public function data(): ?object
-    {
+    public function data(): ?object {
         return $this->data;
     }
 
     /**
      * @return PDOException|null
      */
-    public function fail(): ?PDOException
-    {
+    public function fail(): ?PDOException {
         return $this->fail;
     }
 
@@ -148,8 +141,7 @@ abstract class DataLayer
      * @param string $columns
      * @return DataLayer
      */
-    public function find(?string $terms = null, ?string $params = null, string $columns = "*"): DataLayer
-    {
+    public function find(?string $terms = null, ?string $params = null, string $columns = "*"): DataLayer {
         if ($terms) {
             $this->statement = "SELECT {$columns} FROM {$this->entity} WHERE {$terms}";
             parse_str($params, $this->params);
@@ -161,12 +153,29 @@ abstract class DataLayer
     }
 
     /**
+     * @param bool $all
+     * @param string|null $terms
+     * @param string|null $params
+     * @param string $columns
+     * @return DataLayer
+     */
+    public function findAll(bool $all = false, ?string $terms = null, ?string $params = null, string $columns = "*"): DataLayer|array|static|null {
+        if ($terms) {
+            $this->statement = "SELECT {$columns} FROM {$this->entity} WHERE {$terms}";
+            parse_str($params, $this->params);
+            return $this;
+        }
+
+        $this->statement = "SELECT {$columns} FROM {$this->entity}";
+        return $this->fetchData($all);
+    }
+
+    /**
      * @param int $id
      * @param string $columns
      * @return DataLayer|null
      */
-    public function findById(int $id, string $columns = "*"): ?DataLayer
-    {
+    public function findById(int $id, string $columns = "*"): ?DataLayer {
         return $this->find("{$this->primary} = :id", "id={$id}", $columns)->fetch();
     }
 
@@ -174,8 +183,7 @@ abstract class DataLayer
      * @param string $column
      * @return DataLayer|null
      */
-    public function group(string $column): ?DataLayer
-    {
+    public function group(string $column): ?DataLayer {
         $this->group = " GROUP BY {$column}";
         return $this;
     }
@@ -184,8 +192,7 @@ abstract class DataLayer
      * @param string $columnOrder
      * @return DataLayer|null
      */
-    public function order(string $columnOrder): ?DataLayer
-    {
+    public function order(string $columnOrder): ?DataLayer {
         $this->order = " ORDER BY {$columnOrder}";
         return $this;
     }
@@ -194,8 +201,7 @@ abstract class DataLayer
      * @param int $limit
      * @return DataLayer|null
      */
-    public function limit(int $limit): ?DataLayer
-    {
+    public function limit(int $limit): ?DataLayer {
         $this->limit = " LIMIT {$limit}";
         return $this;
     }
@@ -204,8 +210,7 @@ abstract class DataLayer
      * @param int $offset
      * @return DataLayer|null
      */
-    public function offset(int $offset): ?DataLayer
-    {
+    public function offset(int $offset): ?DataLayer {
         $this->offset = " OFFSET {$offset}";
         return $this;
     }
@@ -214,11 +219,10 @@ abstract class DataLayer
      * @param bool $all
      * @return static|array|null
      */
-    public function fetch(bool $all = false): array|static|null
-    {
+    public function fetch(bool $all = false): array|static|null {
         try {
             $stmt = Connect::getInstance($this->database)->prepare(
-                $this->statement . $this->group . $this->order . $this->limit . $this->offset
+                    $this->statement . $this->group . $this->order . $this->limit . $this->offset
             );
             $stmt->execute($this->params);
 
@@ -238,10 +242,34 @@ abstract class DataLayer
     }
 
     /**
+     * @param bool $all
+     * @return static|array|null
+     */
+    public function fetchData(bool $all = false): array|static|null {
+        try {
+            $stmt = Connect::getInstance($this->database)->prepare(
+                    $this->statement . $this->group . $this->order . $this->limit . $this->offset
+            );
+            $stmt->execute($this->params);
+
+            if (!$stmt->rowCount()) {
+                return null;
+            }
+
+            if ($all) {
+                return $stmt->fetchAll(PDO::FETCH_CLASS, static::class);
+            }
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $exception) {
+            $this->fail = $exception;
+            return null;
+        }
+    }
+
+    /**
      * @return int
      */
-    public function count(): int
-    {
+    public function count(): int {
         $stmt = Connect::getInstance($this->database)->prepare($this->statement);
         $stmt->execute($this->params);
         return $stmt->rowCount();
@@ -250,8 +278,7 @@ abstract class DataLayer
     /**
      * @return bool
      */
-    public function save(): bool
-    {
+    public function save(): bool {
         $primary = $this->primary;
         $id = null;
         $save = null;
@@ -288,8 +315,7 @@ abstract class DataLayer
     /**
      * @return bool
      */
-    public function destroy(): bool
-    {
+    public function destroy(): bool {
         $primary = $this->primary;
         $id = $this->data->$primary;
 
@@ -303,9 +329,8 @@ abstract class DataLayer
     /**
      * @return bool
      */
-    protected function required(): bool
-    {
-        $data = (array)$this->data();
+    protected function required(): bool {
+        $data = (array) $this->data();
         foreach ($this->required as $field) {
             if (empty($data[$field])) {
                 if (!is_int($data[$field])) {
@@ -319,22 +344,20 @@ abstract class DataLayer
     /**
      * @return array|null
      */
-    protected function safe(): ?array
-    {
-        $safe = (array)$this->data;
+    protected function safe(): ?array {
+        $safe = (array) $this->data;
         unset($safe[$this->primary]);
         return $safe;
     }
-
 
     /**
      * @param string $string
      * @return string
      */
-    protected function toCamelCase(string $string): string
-    {
+    protected function toCamelCase(string $string): string {
         $camelCase = str_replace(' ', '', ucwords(str_replace('_', ' ', $string)));
         $camelCase[0] = strtolower($camelCase[0]);
         return $camelCase;
     }
+
 }
