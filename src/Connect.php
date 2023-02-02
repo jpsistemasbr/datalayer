@@ -38,7 +38,9 @@ class Connect
                 self::$error = $exception;
             }
         }
-
+        if(empty(self::$instance)){
+            exit('<h1 style="color:red">Erro ao Acessoar banco de dados</h1>');
+        }
         return self::$instance[$dbName];
     }
 
