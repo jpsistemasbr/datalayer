@@ -308,9 +308,14 @@ abstract class DataLayer
      */
     public function count(): int
     {
-        $stmt = Connect::getInstance($this->database)->prepare($this->statement);
-        $stmt->execute($this->params);
-        return $stmt->rowCount();
+         try {
+            $stmt = Connect::getInstance($this->database)->prepare($this->statement);
+            $stmt->execute($this->params);
+            return $stmt->rowCount();
+        } catch (PDOException $exception) {
+            $erro = $exception->getCode();
+            exit("<h1>Erro: $erro  Não Foi Possível Acessar o Banco de Dados </h1>");
+        }
     }
 
     /**
